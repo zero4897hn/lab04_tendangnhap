@@ -1,76 +1,72 @@
 package com.example.zero;
 
-import java.util.ArrayList;
-import java.util.List;
+class MyNumber {
+	boolean continueFlg = true;
+	int currentNumber;
 
-class Thread3 extends Thread {
-	List<Integer> numbers;
-	public static final int MAX_NUMBER = 10;
-	
-	public Thread3() {
-		numbers = new ArrayList<Integer>();
-	}
-	
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		super.run();
-		try {
-			for (int i = 1; i <= 10; i++) {
-				printNumber(i);
-			}
-		}
-		catch (Exception e) {
-			// TODO: handle exception
-		}
+	public boolean isContinueFlg() {
+		return continueFlg;
 	}
 
-	private synchronized void printNumber(int i) throws InterruptedException {
-		// TODO Auto-generated method stub
-		while (i > MAX_NUMBER) wait();
-		System.out.println(i);
-		numbers.add(i);
+	public void setContinueFlg(boolean continueFlg) {
+		this.continueFlg = continueFlg;
+	}
+
+	public int getCurrentNumber() {
+		return currentNumber;
+	}
+
+	public void setCurrentNumber(int currentNumber) {
+		this.currentNumber = currentNumber;
+	}
+
+	public synchronized void showNumber() throws InterruptedException {
+		for (int i = 1; i <= 10; i++) {
+			currentNumber = i;
+			System.out.print(currentNumber);
+			notify();
+			wait();
+		}
+		continueFlg = false;
 		notify();
 	}
-	
-	public List<Integer> getNumbers() {
-		return numbers;
-	}
-}
 
-class Thread4 extends Thread {
-	Thread3 thread3;
-	
-	public Thread4(Thread3 thread3) {
-		this.thread3 = thread3;
-	}
-	
-	@Override
-	public void run() {
-		while (true) {
-			try {
-				printTypeOfNumber();
-			}
-			catch (Exception e) {
-				
-			}
+	public synchronized void isNumberEvenOrOdd() throws InterruptedException {
+		while (continueFlg) {
+			System.out.println((currentNumber % 2 == 0) ? " -> Chan" : " -> Le");
+			notify();
+			wait();
 		}
-	}
-
-	private synchronized void printTypeOfNumber() throws InterruptedException {
-		notify();
-		while (thread3.getNumbers().size() <= 0) wait();
-		Integer number = thread3.getNumbers().get(0);
-		System.out.println((number.intValue() % 2 == 0)? "Chan" : "Le");
-		thread3.getNumbers().remove(number);
+		System.out.println("END.");
 	}
 }
 
 public class MyThread3 {
 	public static void main(String[] args) {
-		Thread3 thread3 = new Thread3();
-		Thread4 thread4 = new Thread4(thread3);
-		thread3.start();
-		thread4.start();
+		MyNumber myNumber = new MyNumber();
+		Thread thread1 = new Thread() {
+			@Override
+			public void run() {
+				try {
+					myNumber.showNumber();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		Thread thread2 = new Thread() {
+			@Override
+			public void run() {
+				try {
+					myNumber.isNumberEvenOrOdd();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		thread1.start();
+		thread2.start();
 	}
 }
